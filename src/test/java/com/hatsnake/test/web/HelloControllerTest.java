@@ -1,9 +1,13 @@
 package com.hatsnake.test.web;
 
+import com.hatsnake.test.config.auth.SecurityConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -11,11 +15,14 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
 // 스프링 부트 테스트와 JUnit 사이에 연결자 역할
 @RunWith(SpringRunner.class)
 // Web(Spring Web)에 집중할 수 있는 어노테이션
-@WebMvcTest(controllers = HelloController.class)
+@WebMvcTest(controllers = HelloController.class,
+        excludeFilters = {
+                @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class)
+        }
+)
 public class HelloControllerTest {
 
     // 스프링이 관리하는 빈을 주입 받습니다.
@@ -32,8 +39,9 @@ public class HelloControllerTest {
         404 : 서버가 요청받은 리소스를 찾을 수 없음
         500 : 서버의 문제
         502 : 서버가 게이트웨이로부터 잘못된 응답 수신
-    */    
-    
+    */
+
+    @WithMockUser(roles = "USER")
     @Test
     public void hello() throws Exception {
         String hello = "hello";
@@ -46,6 +54,7 @@ public class HelloControllerTest {
                 .andExpect(content().string(hello));
     }
 
+    @WithMockUser(roles = "USER")
     @Test
     public void helloDto() throws Exception {
         String name = "hello";
